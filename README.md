@@ -6,6 +6,10 @@
 ```
   ZX4JAL
 ```
+- Deposit ETH BASE 1$ - 2$.
+- Make 5K transactions to earn 300 grow/hour.
+
+## Instalation
 
 Clone the project
 ```bash
