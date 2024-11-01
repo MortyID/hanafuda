@@ -119,14 +119,12 @@ async def main():
                     print_message('Initiate Grow Action did not return valid data.', "error")
 
             except ValueError as e:
-
-                print()
+                pass
             except KeyError as e:
-
-                print()
+                pass
             except Exception as e:
-
-                print()
+                pass
+                
 
 if __name__ == "__main__":
     asyncio.run(main())
