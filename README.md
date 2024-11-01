@@ -27,3 +27,7 @@ Start the project
 ```bash
   python grow.py
 ```
+
+# How to get token.txt ?
+
+![OPEN APPLICATION](https://github.com/user-attachments/assets/e65748f0-5a2c-4cf5-a74d-df33751e069c)
