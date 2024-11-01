@@ -100,7 +100,7 @@ async def main():
     """
     print(banner)
 
-    for i in range(10000):
+    for i in range(100000000):
         for token in refresh_tokens:
             try:
                 access_token = await get_token(token)
@@ -120,13 +120,13 @@ async def main():
 
             except ValueError as e:
 
-                print_message(f"Value error occurred: {e}", "error")
+                print()
             except KeyError as e:
 
-                print_message(f"Key error occurred: {e}", "error")
+                print()
             except Exception as e:
 
-                print_message(f"An unexpected error occurred: {e}", "error")
+                print()
 
 if __name__ == "__main__":
     asyncio.run(main())
