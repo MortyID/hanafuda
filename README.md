@@ -1,5 +1,7 @@
 # Auto Grow Hanafuda for HANA Network 
 
+![image](https://github.com/user-attachments/assets/55bca2a2-ff62-40e4-8715-bf26d730af24)
+
 - Register here : https://hanafuda.hana.network/dashboard
 - Signup with google accounts
 - Input Code
