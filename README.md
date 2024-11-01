@@ -1,4 +1,11 @@
-HANA FUDA AUTO GROW | REGISTER REFFERALS : ZX4JAL
+# Auto Grow Hanafuda for HANA Network 
+
+- Register here : https://hanafuda.hana.network/dashboard
+- Signup with google accounts
+- Input Code
+```
+  ZX4JAL
+```
 
 Clone the project
 ```bash
