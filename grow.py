@@ -5,6 +5,7 @@ import sys
 from colorama import init, Fore, Style
 import os
 from datetime import datetime
+import time
 
 # Initialize colorama
 init(autoreset=True)
@@ -30,22 +31,21 @@ async def get_token(refresh_token):
     access_token = token_data.get('access_token')
     return access_token
 
-async def Commit(access_token):
+async def getdata(access_token):
     url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
-    payload = json.dumps({
-  "query": "query GetSnsShare($actionType: SnsShareActionType!, $snsType: SnsShareSnsType!) {\\n  getSnsShare(actionType: $actionType, snsType: $snsType) {\\n    lastShareBonusAt\\n    isExistNewBonus\\n  }\\n}",
-  "variables": {
-    "actionType": "GROW",
-    "snsType": "X"
-  },
-  "operationName": "GetSnsShare"
-})
+    payload = {
+    'query': 'query GetGardenForCurrentUser {\n  getGardenForCurrentUser {\n    id\n    inviteCode\n    gardenDepositCount\n    gardenStatus {\n      id\n      growActionCount\n      gardenRewardActionCount\n    }\n    gardenMilestoneRewardInfo {\n      id\n      gardenDepositCountWhenLastCalculated\n      lastAcquiredAt\n      createdAt\n    }\n    gardenMembers {\n      id\n      sub\n      name\n      iconPath\n      depositCount\n    }\n  }\n}',
+    'operationName': 'GetGardenForCurrentUser',
+    }
     headers = {
         'Authorization': f'Bearer {access_token}'
     }
     response = requests.post(url, headers=headers, json=payload)
     result = response.json()
     return result
+
+
+
 
 async def initiate(access_token):
     url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
@@ -91,6 +91,8 @@ def print_message(message, message_type='info'):
         formatted_message = f"[ {timestamp} ] {Fore.GREEN}{Style.BRIGHT}{message}{Style.RESET_ALL}"
     elif message_type == 'error':
         formatted_message = f"[ {timestamp} ] {Fore.RED}{Style.BRIGHT}{message}{Style.RESET_ALL}"
+    elif message_type == 'warning':
+        formatted_message = f"[ {timestamp} ] {Fore.YELLOW}{Style.BRIGHT}{message}{Style.RESET_ALL}"
     else:
         formatted_message = f"[ {timestamp} ] {Fore.CYAN}{message}{Style.RESET_ALL}"
     print(formatted_message)
@@ -110,19 +112,26 @@ async def main():
     {magenta}┛┗┛┗┛┗┛┗┻ ┗┛┻┛┛┗  {white}Github : {green}https://github.com/MortyID
     """
     print(banner)
-
     for i in range(100000000):
         for token in refresh_tokens:
             try:
                 access_token = await get_token(token)
-                initiategrow = await initiate(access_token)
+                result_data  = await getdata(access_token)
+                    
+                totalgrow    = result_data['data']['getGardenForCurrentUser']['gardenStatus']['growActionCount']
+                if totalgrow > 0:
+                    for i in range(totalgrow):
+                        initiategrow = await initiate(access_token)
 
-                if 'data' in initiategrow and 'executeGrowAction' in initiategrow['data']:
-                    points = initiategrow['data']['executeGrowAction']['totalValue']
-                    print_message(f'Grow Successfully earned Points: {points}', "success")
+                        if 'data' in initiategrow and 'executeGrowAction' in initiategrow['data']:
+                            points = initiategrow['data']['executeGrowAction']['totalValue']
+                            print_message(f'Grow Successfully earned Points: {points}', "success")
+                        else:
+                            print_message('Initiate Grow Action did not return valid data.', "error")
                 else:
-                    print_message('Initiate Grow Action did not return valid data.', "error")
-
+                    print_message(f'Grow Action Count Empty.', "warning")
+                    print_message(f'Delay 20 Minutes For Looping.', "warning")
+                    time.sleep(20 * 60)
             except ValueError as e:
                 pass
             except KeyError as e:
