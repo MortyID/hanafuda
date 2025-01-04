@@ -44,17 +44,55 @@ async def getdata(access_token):
     result = response.json()
     return result
 
-
-
+async def getname(access_token):
+    url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
+    headers = {
+      'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      'Accept': "application/graphql-response+json, application/json",
+      'Content-Type': "application/json",
+      'accept-language': "en-US,en;q=0.9",
+      'authorization': f"Bearer {access_token}",
+      'origin': "https://hanafuda.hana.network",
+      'priority': "u=1, i",
+      'referer': "https://hanafuda.hana.network/",
+      'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+      'sec-ch-ua-mobile': "?0",
+      'sec-ch-ua-platform': "\"Windows\"",
+      'sec-fetch-dest': "empty",
+      'sec-fetch-mode': "cors",
+      'sec-fetch-site': "cross-site"
+    }
+    json_data = {
+    'query': 'query GetCurrentMinimizedUser {\n  currentMinimizedUser {\n    id\n    sub\n    name\n    iconPath\n  }\n}',
+    'operationName': 'GetCurrentMinimizedUser',
+    }
+    response = requests.post(
+    'https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql',
+    headers=headers,
+    json=json_data,
+    )
+    response = response.json()
+    response = response['data']['currentMinimizedUser']['name']
+    return response
 
 async def initiate(access_token):
     url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
     
     # The payload should be a dictionary, not a string
-    payload = {
-      "query": "mutation ExecuteGrowAction {\n  executeGrowAction {\n    baseValue\n    leveragedValue\n    totalValue\n    multiplyRate\n  }\n}",
-      "operationName": "ExecuteGrowAction"
-    }
+    grow_action_query = {
+              "query": """
+                  mutation executeGrowAction {
+                      executeGrowAction(withAll: true) {
+                          totalValue
+                          multiplyRate
+                      }
+                      executeSnsShare(actionType: GROW, snsType: X) {
+                          bonus
+                      }
+                  }
+              """,
+              "operationName": "executeGrowAction"
+         }
     
     headers = {
       'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
@@ -72,7 +110,7 @@ async def initiate(access_token):
       'sec-fetch-mode': "cors",
       'sec-fetch-site': "cross-site"
     }
-    response = requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=grow_action_query)
     return response.json()
 
 def load_accounts(file_path):
@@ -117,7 +155,9 @@ async def main():
             try:
                 access_token = await get_token(token)
                 result_data  = await getdata(access_token)
-                    
+                getnames     = await getname(access_token)
+                print(f"{magenta}=========== {getnames} ===========")
+                
                 totalgrow    = result_data['data']['getGardenForCurrentUser']['gardenStatus']['growActionCount']
                 if totalgrow > 0:
                     for i in range(totalgrow):
@@ -131,13 +171,14 @@ async def main():
                 else:
                     print_message(f'Grow Action Count Empty.', "warning")
                     print_message(f'Delay 20 Minutes For Looping.', "warning")
-                    time.sleep(20 * 60)
+                    
             except ValueError as e:
                 pass
             except KeyError as e:
                 pass
             except Exception as e:
                 pass
+        time.sleep(20 * 60)
                 
 
 if __name__ == "__main__":
