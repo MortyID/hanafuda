@@ -170,7 +170,6 @@ async def main():
                             print_message('Initiate Grow Action did not return valid data.', "error")
                 else:
                     print_message(f'Grow Action Count Empty.', "warning")
-                    print_message(f'Delay 20 Minutes For Looping.', "warning")
                     
             except ValueError as e:
                 pass
@@ -178,6 +177,7 @@ async def main():
                 pass
             except Exception as e:
                 pass
+        print_message(f'Delay 20 Minutes For Looping.', "warning")
         time.sleep(20 * 60)
                 
 
