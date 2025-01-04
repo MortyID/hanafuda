@@ -32,14 +32,14 @@ async def get_token(refresh_token):
 
 async def Commit(access_token):
     url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
-    payload = {
-        "operationName": "commitGrowAction",
-        "query": """
-            mutation commitGrowAction {
-                commitGrowAction
-            }
-        """
-    }
+    payload = json.dumps({
+  "query": "query GetSnsShare($actionType: SnsShareActionType!, $snsType: SnsShareSnsType!) {\\n  getSnsShare(actionType: $actionType, snsType: $snsType) {\\n    lastShareBonusAt\\n    isExistNewBonus\\n  }\\n}",
+  "variables": {
+    "actionType": "GROW",
+    "snsType": "X"
+  },
+  "operationName": "GetSnsShare"
+})
     headers = {
         'Authorization': f'Bearer {access_token}'
     }
@@ -49,20 +49,31 @@ async def Commit(access_token):
 
 async def initiate(access_token):
     url = "https://hanafuda-backend-app-520478841386.us-central1.run.app/graphql"
+    
+    # The payload should be a dictionary, not a string
     payload = {
-        "operationName": "issueGrowAction",
-        "query": """
-            mutation issueGrowAction {
-                issueGrowAction
-            }
-        """
+      "query": "mutation ExecuteGrowAction {\n  executeGrowAction {\n    baseValue\n    leveragedValue\n    totalValue\n    multiplyRate\n  }\n}",
+      "operationName": "ExecuteGrowAction"
     }
+    
     headers = {
-        'Authorization': f'Bearer {access_token}'
+      'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      'Accept': "application/graphql-response+json, application/json",
+      'Content-Type': "application/json",
+      'accept-language': "en-US,en;q=0.9",
+      'authorization': f"Bearer {access_token}",
+      'origin': "https://hanafuda.hana.network",
+      'priority': "u=1, i",
+      'referer': "https://hanafuda.hana.network/",
+      'sec-ch-ua': "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"",
+      'sec-ch-ua-mobile': "?0",
+      'sec-ch-ua-platform': "\"Windows\"",
+      'sec-fetch-dest': "empty",
+      'sec-fetch-mode': "cors",
+      'sec-fetch-site': "cross-site"
     }
     response = requests.post(url, headers=headers, json=payload)
-    result = response.json()
-    return result
+    return response.json()
 
 def load_accounts(file_path):
     """Load the list of accounts from a file and return it as a list."""
@@ -106,15 +117,9 @@ async def main():
                 access_token = await get_token(token)
                 initiategrow = await initiate(access_token)
 
-                if 'data' in initiategrow and 'issueGrowAction' in initiategrow['data']:
-                    points = initiategrow['data']['issueGrowAction']
+                if 'data' in initiategrow and 'executeGrowAction' in initiategrow['data']:
+                    points = initiategrow['data']['executeGrowAction']['totalValue']
                     print_message(f'Grow Successfully earned Points: {points}', "success")
-
-                    grow_commit = await Commit(access_token)
-                    if 'data' in grow_commit and 'commitGrowAction' in grow_commit['data']:
-                        print_message('Commit Successfully', "success")
-                    else:
-                        print_message('Commit Grow Action did not return valid data.', "error")
                 else:
                     print_message('Initiate Grow Action did not return valid data.', "error")
 
